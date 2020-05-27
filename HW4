@@ -124,7 +124,7 @@ class AdjacentLists {
 					for ( int q = i ; q >= gap && adjList.at(q).id < adjList.at(q-gap).id ; q-=gap )	swap( adjList[q], adjList[q-gap] ) ;
 				} // for
 			} // for
-			for ( int i = 0 ; i < adjList.size() ; i ++ )	sort( adjList.at(i).aroundList, 2 ) ;
+			for ( int i = 0 ; i < adjList.size() ; i ++ )	sort( adjList.at(i).aroundList, 1 ) ;
 	    	
 		} // bulid()
 		
