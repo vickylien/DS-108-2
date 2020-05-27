@@ -8,13 +8,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
-#include <ctime>
-#include <time.h>
 #include <cstdlib>
 #include <iterator>  
 #include <algorithm>
-#include <math.h>
 #include <sstream>
+#include <queue> 
 
 using namespace std ;
 static double unexist, exist ;
