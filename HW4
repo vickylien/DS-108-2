@@ -164,6 +164,7 @@ class Traverse {
 	private:
 		ComponentNode *root ;
 		ComponentNode *nowPtr ;
+		ComponentNode *answer ;
 		
 	public:
 		
@@ -171,6 +172,7 @@ class Traverse {
 		void initTraverse() {  //  初始化 
 	        root = NULL ;
 	        nowPtr = NULL ;
+		answer = NULL ;
         } // initTraverse
         
 		bool duplicate( string id , ComponentNode *now   ) { // 判斷是否重複 
@@ -215,14 +217,12 @@ class Traverse {
         
         void build(AdjacentLists & aList ){
 			queue<string> q;
-			ComponentNode *answer ;
-			ComponentNode *first ;
 			nowPtr = new ComponentNode();
 			assignToNode(aList, nowPtr) ;
 			
 			ComponentNode* temp = nowPtr ; // 用備份來跑 
 			first = new ComponentNode() ; 
-			answer = first ; // 設定head 
+			answer = root ; // 設定head 
 			
 			for(int i = 0; temp!=NULL ; i++, temp = temp->next){
 				
@@ -256,7 +256,7 @@ class Traverse {
 				aList.sort(answer->connect, 1) ;
 			}
 			
-			answer = first ; // 返回head 
+			answer = root ; // 返回head 
 		}
 		
 		void outputFile( string nof ) {
