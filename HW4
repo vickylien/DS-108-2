@@ -155,7 +155,6 @@ class AdjacentLists {
 
 struct ComponentNode {
 	string id;
-	int count = 0 ;
 	vector<AType> group ; // 相連學號(任務一) 
 	vector<AType> connect ; // 相連學號(任務二) 
 	ComponentNode *next ; 
@@ -246,8 +245,7 @@ class Traverse {
 
 							AType tempid ;
 							tempid.id.assign(found->group.at(i).id); 
-							answer->connect.push_back(tempid); // 放入connect清單中 
-							answer->count++ ; // 數量 
+							answer->connect.push_back(tempid); // 放入connect清單中  
 							q.push(found->group.at(i).id); // 將通訊清單剩餘的丟進來檢查 
 							
 						}
