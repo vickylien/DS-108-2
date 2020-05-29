@@ -154,7 +154,10 @@ class AdjacentLists {
 };
 
 struct ComponentNode {
-	vector<AType> group ;
+	string id;
+	int count = 0 ;
+	vector<AType> group ; // 相連學號(任務一) 
+	vector<AType> connect ; // 相連學號(任務二) 
 	ComponentNode *next ; 
 };
 
@@ -164,81 +167,99 @@ class Traverse {
 		ComponentNode *nowPtr ;
 		
 	public:
-		ComponentNode *newPtr ;
+		
 		
 		void initTraverse() {  //  初始化 
 	        root = NULL ;
 	        nowPtr = NULL ;
         } // initTraverse
         
-        bool insert( AdjacentLists & aList, int num ) {
-        	if ( !aList.adjList.at(num).hasPassed ) {
-        		AType newNode ;
-        		newNode.id = aList.adjList.at(num).id ;
-        		newPtr->group.push_back(newNode) ;
-        		aList.adjList.at(num).hasPassed = true ;
-        		return true ;
-			} // if
+		bool duplicate( string id , ComponentNode *now   ) { // 判斷是否重複 
+			ComponentNode * temp = now ;
+			if(temp != NULL){
+				if ( id == temp->id )  // 是否有相同的 
+						return true ;			
+				for( int i = 0 ; i < temp->connect.size() ; i++ ){
+					if ( id == temp->connect.at(i).id ) 
+						return true ;
+				} // for 		
+					
+			} //else 
 			return false ;
-		} // insert()
+		} // found
+		
+		ComponentNode* check( string id){
+			
+			for( ComponentNode* temp = nowPtr ;temp != NULL ; temp = temp ->next ){
+				if ( id == temp->id ) 
+					return temp;
+			} // for 
+		}
         
-        void traverse( AdjacentLists & aList, int num, int n ) {  // num:第幾個id，n:id的第幾個aroundList 	
-        	if ( n < aList.adjList.at(num).aroundList.size() ) {
-        		for ( int i = 0 ; i < aList.adjList.size() ; i ++ ) {   //找對應的id 
-        			if (  aList.adjList.at(i).id == aList.adjList.at(num).aroundList.at(n).id ) {
-        				if ( insert( aList, i ) ) {
-        					traverse( aList, i, 0 ) ;
-        					traverse( aList, num, n+1 ) ;
-						} // if
-						else	traverse( aList, num, n+1 ) ;
-						i = aList.adjList.size() ;  // 使迴圈結束
-					} // if 
-				} // for
-			} // if
+        void assignToNode(AdjacentLists & aList, ComponentNode *& temp){ // 將任務一的list assign到任務二的指標 
+        	ComponentNode *store ;
+        	store = temp ; // 暫存temp的頭 
+        	for(int i = 0 ; i < aList.adjList.size() ; i++){
+        		if(i != 0){  
+        			temp->next = new ComponentNode();
+        			temp = temp ->next;
+				}
+        		temp->id = aList.adjList.at(i).id ;
+        		temp->group.assign(aList.adjList.at(i).aroundList.begin(), aList.adjList.at(i).aroundList.end());
+			}
+			temp = store ; // 還原temp 
+		}
+		void clearQueue(queue<string> &queue){
+			std::queue<string> empty;
+			swap(empty, queue) ;
+		}
+        
+        void build(AdjacentLists & aList ){
+			queue<string> q;
+			ComponentNode *answer ;
+			ComponentNode *first ;
+			nowPtr = new ComponentNode();
+			assignToNode(aList, nowPtr) ;
 			
-		} // traverse
-		
-		int IsNotEnd( AdjacentLists & aList ) {
-			int i ;
-			for ( i = 0 ; i < aList.adjList.size() && aList.adjList.at(i).hasPassed ; i ++ ) ;
-			if ( i < aList.adjList.size() )	return i ;
-			else	return -1 ;
-		} // IsNotEnd()
-		
-		void build( AdjacentLists & aList ) {
-			int num = IsNotEnd( aList ) ;
-			int time ;
-			while( num != -1 ) {
-				newPtr = new ComponentNode ;
-				newPtr->next = NULL ;
-				insert( aList, num ) ;
-				traverse( aList, num, 0 ) ;
-				//aList.sort( newPtr->group, 1 ) ;
+			ComponentNode* temp = nowPtr ; // 用備份來跑 
+			first = new ComponentNode() ; 
+			answer = first ; // 設定head 
+			
+			for(int i = 0; temp!=NULL ; i++, temp = temp->next){
 				
-				if ( root == NULL )	root = newPtr ;
-				else {
-					nowPtr = root ;
-					ComponentNode *temp = nowPtr ;
-					int i = 0 ;
-					for ( i = 0 ; nowPtr != NULL && nowPtr->group.size() > newPtr->group.size() ; i ++ ) {
-						if ( i != 0 )	temp = temp->next ;
-						nowPtr = nowPtr->next ;
-					} // while
-					if ( nowPtr != NULL && i != 0 ) {
-						temp->next = newPtr ;
-						newPtr->next = nowPtr ;
-					} // if
-					else if ( i == 0 ) {
-						root = newPtr ;
-						newPtr->next = nowPtr ;
-					} // else if 
-					else	nowPtr->next = newPtr ;
-				} // else
+				if(i>0){ // 創建新結點 
+					answer ->next = new ComponentNode() ;
+					answer = answer -> next ;
+				}
+				
+				clearQueue(q); // 清空queue 
+				answer->id.assign(temp->id);
+				q.push(temp->id);
+				
+				while( !q.empty() ){ // queue還沒清空 
 
-				num = IsNotEnd( aList ) ;
-			} // while
+					ComponentNode* found = check( q.front() ) ; // 檢查是否有通訊
+					q.pop(); //有的話pop掉並檢查是否重複 
+					for(int i = 0 ; i < found -> group.size(); i++){
+						
+						if(!duplicate(found->group.at(i).id , answer)){ // 假設沒有重複 
+
+							AType tempid ;
+							tempid.id.assign(found->group.at(i).id); 
+							answer->connect.push_back(tempid); // 放入connect清單中 
+							answer->count++ ; // 數量 
+							q.push(found->group.at(i).id); // 將通訊清單剩餘的丟進來檢查 
+							
+						}
+					}
+							
+							
+				}
+				aList.sort(answer->connect, 1) ;
+			}
 			
-		} // build
+			answer = first ; // 返回head 
+		}
 		
 		void outputFile( string nof ) {
 			FILE *fanswer = NULL;
