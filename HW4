@@ -306,29 +306,62 @@ class Traverse {
 };
 
 
-int main() { 
-	string nof = "1" ;
-	int ran = 1 ;
-	while( nof != "0" && ran != 0 ) {
-		AdjacentLists aList ;
+AdjacentLists aList ;
+
+void information(){
+	cout << "\n**** Graph data manipulation ****" << endl ;
+	cout << "* 0. QUIT                       *" << endl ;
+	cout << "* 1. Build adjacency lists      *" << endl ;
+	cout << "* 2. Compute connection counts  *" << endl ;
+	cout << "*********************************" << endl ;
+	cout << "Input a choice(0, 1, 2):"  ;
+}
+
+void run(){
+	information() ;
+	string nof = "1" ;	
+	int command = 0 ;
+	cin >> command ;
+	
+	if ( command == 0 ){
+		exit;
+	}
+	else if ( command == 1 ){
+		aList.clear() ;
 		Traverse DEF ;
 		DEF.initTraverse() ;
+		printf ( "\nInput a file number ([0] Quit):" ) ;
 		cin >> nof ;
-		if ( nof == "0" )  ran = 0 ;
-		else if ( aList.Readfild( nof ) ) {
+		if ( aList.Readfild( nof ) ) { // 檔名存在 
 			aList.build() ;
 			aList.outputFile( nof ) ;
-			cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl ;
-			cout << "Mission 2: Find connected components" << endl ;
-			cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl << endl ;
-			cout << "~~~ Connected Components ~~~" ;
+			run() ;
+		}
+		else{
+			run();
+		}
+	}
+	else if ( command == 2 ) {
+		if( aList.adjList.empty() ){
+			cout << "### There is no graph and choose 1 first. ###\n" << endl ;
+			run() ;
+		}
+		else{
+			Traverse DEF ;
+			DEF.initTraverse() ;
+
 			DEF.build( aList ) ;
-			DEF.outputFile( nof ) ;
-			cout << endl << endl << "[0]Quit or [Any other]continue?" << endl ;
-			cin >> nof ;			
-		} // else if	 
-	} // while		
-	
+			DEF.outputFile( nof , aList) ;
+			run() ;		
+		}
+	}
+	else{
+		cout << "\nCommand does not exist!\n" << endl ;
+		run() ;
+	} 	
+}
+int main() { 
+	run();
 } // main() 
 
 
