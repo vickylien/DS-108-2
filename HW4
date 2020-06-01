@@ -158,6 +158,7 @@ struct ComponentNode {
 	vector<AType> group ; // 相連學號(任務一) 
 	vector<AType> connect ; // 相連學號(任務二) 
 	ComponentNode *next ; 
+	bool hasPassed = false ; // 輸出用
 };
 
 class Traverse {
@@ -259,27 +260,46 @@ class Traverse {
 			answer = root ; // 返回head 
 		}
 		
-		void outputFile( string nof ) {
+		void outputFile( string nof, AdjacentLists & aList  ) {
+			int i = 1 ;
+			int num[aList.adjList.size()] ; // 暫存人數 
 			FILE *fanswer = NULL;
-			string inputfile_name = "pairs" + nof + ".cc" ; // 將"input"與檔名連接	
+			string inputfile_name = "pairs" + nof + ".cnt" ; // 將"input"與檔名連接	
 			const char* name = inputfile_name.c_str() ;	    	
 			fanswer = fopen( name, "w") ;
 			
-			nowPtr = root ;
-			for ( int i = 1 ; nowPtr != NULL ; i ++ ) {
-				if ( i != 1 )	fprintf( fanswer, "\n") ;
-				fprintf ( fanswer, "{%2d}  Connected Component: size = %d \n" , i, nowPtr->group.size() ) ;
-				cout << endl << "{" << setw(2) << i << "} Connected Component: size = " << nowPtr->group.size() << endl ;
-				for ( int j = 0 ; j < nowPtr->group.size() ; j ++ ) {
-					fprintf ( fanswer, "\t(%3d) %s"  , j+1, nowPtr->group.at(j).id.c_str() ) ;
-					cout << "\t(" << setw(3) << j+1 << ") " << nowPtr->group.at(j).id ;
-					if ( (j+1)%5 == 0 )	{
+			answer = root ; // 回到head 
+			fprintf( fanswer, "<<< There are %d IDs in total. >>>\n", aList.adjList.size() ) ;
+			
+			
+			for(int i = 0; i < aList.adjList.size() && answer!= NULL ; i++){ // 取得size 
+				num[i] = answer->connect.size();
+				answer = answer->next ;
+			}
+			
+			sort(num, num + aList.adjList.size(), greater<int>()); // 降序排序 
+								
+			answer = root ; // 回到head 
+			
+			while( i < aList.adjList.size() ){
+				for (; answer != NULL ; answer = answer->next) {
+					if( answer->connect.size() == num[i-1] && answer->hasPassed != true ){ // 由大到小印出 
+						fprintf ( fanswer, "[%3d] %s(%d): \n" , i, answer->id.c_str() , answer->connect.size() ) ;
+						for ( int j = 0 ; j < answer->connect.size() ; j ++ ) {
+							fprintf ( fanswer, "\t(%2d) %s"  , j+1, answer->connect.at(j).id.c_str() ) ;
+							if ( (j+1)% 10 == 0 )	{
+								fprintf( fanswer, "\n") ;
+							} // if
+						} // for
+						i++; 
+						answer->hasPassed = true ;
+						answer = root ;
 						fprintf( fanswer, "\n") ;
-						cout << endl ;
-					} // if
-				} // for
-				nowPtr = nowPtr->next ;
-			} // for
+					}
+				} // for		
+				answer = root ;	
+			}
+			
 			fclose( fanswer ) ;
 		} // outputFile
 		
