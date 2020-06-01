@@ -226,7 +226,7 @@ class Traverse {
 			assignToNode(aList, nowPtr) ;
 			
 			ComponentNode* temp = nowPtr ; // 用備份來跑 
-			first = new ComponentNode() ; 
+			root = new ComponentNode() ; 
 			answer = root ; // 設定head 
 			
 			for(int i = 0; temp!=NULL ; i++, temp = temp->next){
