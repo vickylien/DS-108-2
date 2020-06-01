@@ -75,6 +75,11 @@ class AdjacentLists {
 			} // else
 	    } // Readfild()
 	    
+	    	void clear(){
+	    		JList.clear();
+	    		adjList.clear();
+		}
+	    
 		void sort( vector<AType> & list, int sel ) {     //希爾排序法	
 			int gap = list.size()/2 ;
 			for ( ; gap > 0 ; gap = gap / 2 ) {
@@ -133,6 +138,7 @@ class AdjacentLists {
 			fanswer = fopen( name, "w") ;
 			
 			int sumNode = 0 ;
+			cout << "\n<<< There are " << adjList.size() << " IDs in total. >>>" << endl ;
 			fprintf( fanswer, "<<< There are %d IDs in total. >>>", adjList.size() ) ;
 			for ( int i = 0 ; i < adjList.size() ; i ++ ) {
 				fprintf ( fanswer, " \n[%3d] " , i+1  ) ;
@@ -144,9 +150,7 @@ class AdjacentLists {
 				sumNode = sumNode + adjList.at(i).aroundList.size() ;
 			} // for	
 			fprintf( fanswer, "\n<<< There are %d nodes in total. >>>", sumNode ) ;
-			cout << endl << "<<< " << JList.size()-1 << " pairs => " << sumNode << " nodes >>>" << endl << endl ;
-			cout << "Adjacency lists are written into a file..." << endl << endl ;
-			cout << "<<< There are " << sumNode << " nodes in total. >>>" << endl << endl ;
+			cout << "\n<<< There are " << sumNode << " nodes in total. >>>" << endl << endl ;
 			
 			fclose( fanswer ) ;
 		} // outputFile
@@ -270,7 +274,7 @@ class Traverse {
 			
 			answer = root ; // 回到head 
 			fprintf( fanswer, "<<< There are %d IDs in total. >>>\n", aList.adjList.size() ) ;
-			
+			cout << "\n<<< There are " << aList.adjList.size() << " IDs in total. >>>" << endl ;
 			
 			for(int i = 0; i < aList.adjList.size() && answer!= NULL ; i++){ // 取得size 
 				num[i] = answer->connect.size();
