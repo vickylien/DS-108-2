@@ -1,0 +1,16 @@
+// 使用github版本機測 
+//			第28組 
+//資訊四甲 10527120 林育戎
+//財金四乙 10447236 連盈媛 
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <vector>
+#include <cstdlib>
+#include <iterator>  
+#include <algorithm>
+#include <math.h>
+#include <sstream>
