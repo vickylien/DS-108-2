@@ -1,16 +1,276 @@
-// 使用github版本機測 
-//			第28組 
-//資訊四甲 10527120 林育戎
-//財金四乙 10447236 連盈媛 
+#include <sstream>
+#include <stdio.h>
 #include <iostream>
-#include <iomanip>
+#include <string>
+#include <vector>
 #include <fstream>
 #include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <vector>
-#include <cstdlib>
-#include <iterator>  
-#include <algorithm>
+# include <time.h> 
 #include <math.h>
-#include <sstream>
+#include <iomanip>
+#include <queue> 
+#include <cstdlib>
+using namespace std ;
+
+
+struct data {
+	char sid1[10]; 
+	char sid2[10]; 
+	float weight ; 
+} ;
+
+struct Link {
+	char sid[10]; 	  
+	float weight ; 
+};
+
+struct Node {
+	char sid[10];  	  
+	float weight ; 
+	Node * next ;
+} ;
+struct DNode {
+	Node * Id ; 
+	int degree = 0 ;
+	DNode * next ;
+} ;
+
+struct LinkArray {
+	char sid[10];  	  
+	float weight ;
+	int degree ; 
+	Link * next ;
+} ;
+
+struct NodeLink {
+	char sid[10]; 	
+	float weight; 
+	vector<Link> connect ;			
+	int degree = 0;
+	NodeLink * next ;
+}  ;
+
+struct nodetype {
+	char sid1[10] ;
+	float weight ;
+	bool find = false ;
+};
+struct anstype {
+	char sid1[10] ; 
+	int num ;
+	vector<nodetype> match ; // 其他資料&配對權重 
+	bool use ;
+};
+struct TwoType {
+	char sid1[10] ;  
+	float weight = 0;
+	bool find = false ;
+	int num ;
+};
+struct treetype {
+	char sid1[10] ; 
+	float minweight = 0;
+	vector<nodetype> match ; // 其他資料&配對權重 
+	bool find = false ;	
+};
+
+class Start{	
+	public :
+	vector<data> list ;
+	vector<LinkArray> graph ;		
+	vector<anstype> match ; // 配對的表 
+	vector<nodetype> List ;
+	vector<anstype> ConnectList ; //存放有關連的資料 
+	vector<nodetype> TreeList ;
+	vector<treetype> MemberList ;
+	vector<TwoType> SecList ; // 存與指定學號有關 
+	vector<treetype> MemberList2 ; // 跑每筆學號最短路徑 
+	vector<TwoType> AnsList ; // 放最後答案 
+
+	DNode *Data = NULL ;
+	NodeLink * head	;
+	NodeLink * root ;
+	
+		
+	void init()  { // 初始化 
+		list.clear() ;
+		graph.clear() ;			
+		match.clear() ; 
+		List.clear() ;
+		ConnectList.clear() ; 
+		TreeList.clear() ;
+		MemberList.clear() ; 
+		SecList.clear() ; 
+		MemberList2.clear() ; 
+		AnsList.clear() ;		
+	} // init()	
+	
+	void TextInput(string filename,string filenumber,float realnum) { //讀入檔案 
+		ifstream inFile;
+		filename = "pairs" + filenumber + ".bin";
+		data temp ;
+		inFile.open( filename.c_str(), ios::in | ios::binary ) ;
+		if (!inFile){	
+			cout << filename << " does not exist!!!\n\n";
+		} //
+		else {
+			head = new NodeLink() ;
+			for( int num = 0 ; inFile.read((char*)&temp, sizeof(data)) ; num++ ) { 
+				if ( temp.weight <= realnum )
+					list.push_back(temp) ;
+			}
+		} // else 
+		
+	} // Text2Binary	
+
+	bool check( data temp, vector<LinkArray> &graph ) { // 檢查裡面是否有相同的 
+		LinkArray temp1 ;
+		if( graph.size() == 0 ){ // 空的 
+			strcpy( temp1.sid, temp.sid1 ) ;  
+			graph.push_back(temp1) ; // 丟進去 
+		}
+		for( int i = 0 ; i < graph.size() ; i++ ){
+			if( strcmp( temp.sid1, graph.at(i).sid ) == 0 ){ // 是否有相同的 
+				return 0 ;
+			}
+		}
+		return 1 ;
+	}
+	
+	void mission0( string filenumber,float realnum ) {	// 任務0 
+		LinkArray temp ;
+		data temp1 ;
+		for( int i = 0 ; i < list.size() ; i++ ){		// 遍歷所有的點 
+			strcpy( temp1.sid1, list.at(i).sid1) ;		// 找到就貼上 
+			if( check( temp1 , graph ) ){
+				strcpy( temp.sid, list.at(i).sid1 ) ;	
+				temp.weight =list.at(i).weight ; 		
+				graph.push_back(temp) ;
+			}				
+			strcpy( temp1.sid1, list.at(i).sid2) ;		
+			if( check( temp1 , graph ) ){ // 檢查List內是否有重複的 
+				strcpy( temp.sid, list.at(i).sid2 ) ;			
+				temp.weight =list.at(i).weight ;
+				graph.push_back(temp) ;
+			}	
+		}
+		
+		sort( graph ) ;													// 排序 				
+		NodeLink * temp2 = new NodeLink() ;								// 存入指標 
+		temp2 = head ;
+		strcpy( temp2->sid, graph[0].sid ) ;	
+		temp2->weight = graph[0].weight ;		
+		temp2 -> degree = 1 ;
+		
+		for( int i = 1 ; i < graph.size() ; i++ ){
+			temp2 -> next = new NodeLink() ;
+			temp2 = temp2 -> next ;
+			strcpy( temp2->sid, graph[i].sid ) ;
+			temp2->weight = graph[i].weight ;
+			temp2 -> degree = 0 ;
+		}
+				
+		for( int i = 0 ; i < list.size() ; i++ ){								// 有先關的點連接起來 
+			Link test ;
+			for( NodeLink * temp = head ; temp != NULL ; temp = temp -> next ){
+				if( strcmp( temp->sid, list[i].sid1 ) == 0 ){
+					strcpy( test.sid, list[i].sid2 );
+					test.weight = list[i].weight ;
+					temp->connect.push_back( test ) ;
+					temp->degree ++ ;
+					break ;
+				}
+			}
+			for( NodeLink * temp = head ; temp != NULL ; temp = temp -> next ){
+				if( strcmp( temp->sid, list[i].sid2 ) == 0 ){
+					strcpy( test.sid, list[i].sid1 );
+					test.weight = list[i].weight ;
+					temp->connect.push_back( test ) ;
+					temp->degree ++ ;
+					break ;
+				}
+			}
+		}
+		
+		int ids = 0 ;
+		
+		for( NodeLink * temp = head ; temp != NULL ; temp = temp -> next ) {	
+			ids++;
+			sortinglist( temp ) ;																// 鏈結的排序
+		} // for 
+		
+	    string rnum ; 			//型別轉換 
+	    stringstream ss;
+	    ss << realnum ;
+	    ss >> rnum ;
+		string filename = "Pairs" + filenumber + "_"+  rnum+ ".adj" ;										// 寫檔 
+		ofstream outFile ;
+		outFile.open(filename.c_str(), ios::out ) ;
+		
+		outFile << endl << "<<< There are " << ids << " ids in total. >>>" << endl ;		
+		int nodes = 0,i = 0 ;
+		
+		for( NodeLink * temp3 = head ; temp3 != NULL ; temp3 = temp3 -> next  ){
+			
+			anstype test ;
+			strcpy ( test.sid1,temp3->sid ) ;
+			match.push_back(test) ;
+			
+			outFile << "[" << i+1 << "] " << temp3->sid << " :" << endl << "\t" ;                      //Output
+			for( int j = 0 ; j < temp3->connect.size() ; j++ ){
+				nodetype tempdata ;
+				strcpy (tempdata.sid1 ,temp3->connect[j].sid) ;
+				tempdata.weight = temp3->connect[j].weight ;
+				match[i].match.push_back(tempdata) ;
+				outFile  << "(" << j+1 << ") " << temp3->connect[j].sid << ",\t" << temp3->connect[j].weight << "\t" ;
+				nodes++ ;
+				if( (j+1)%10 == 0 )
+					outFile << endl << "\t" ;
+			}
+			outFile << endl ;
+			i++ ;
+		}
+		outFile << endl << "<<< There are " << nodes << " nodes in total. >>>" ;
+		outFile.close() ;
+		
+		
+		cout << "\n<<< There are " << ids << " ids in total. >>>" <<endl;								 			
+		cout << "\n<<< There are " << nodes << " nodes in total. >>>"<< endl; 		
+		
+	} // mission0
+	
+	void sort( vector<LinkArray> &graph ) {
+		data temp1 ;
+		for(int i = 0; i < graph.size(); i++)   {                            // 排序 weight = 1  
+	    	graph.at(i).degree = 1 ;
+	        for(int j = 1; j < graph.size()- i; j++) {
+	            if( strcmp( graph.at(j).sid, graph.at(j-1).sid ) <= 0 )  {
+	                strcpy( temp1.sid1, graph.at(j-1).sid ) ;
+	                strcpy( graph.at(j-1).sid, graph.at(j).sid ) ;
+	                strcpy( graph.at(j).sid, temp1.sid1 ) ;
+	                
+	                temp1.weight= graph.at(j-1).weight ;
+	                graph.at(j-1).weight = graph.at(j).weight ;
+	                graph.at(j).weight= temp1.weight ;	                
+	                
+	            }
+	        }
+	    }
+	    
+	}
+	void sortinglist( NodeLink *temp ){													// 排序 
+		Link temp1 ;
+		for( int i = 0 ; i < temp->connect.size() ; i++ ){
+	        for(int j = 1; j < temp->connect.size()- i; j++) {
+	            if( temp->connect[j].weight < temp->connect[j-1].weight  )  {
+	                strcpy( temp1.sid, temp->connect[j-1].sid ) ;
+	                strcpy( temp->connect[j-1].sid, temp->connect[j].sid ) ;
+	                strcpy( temp->connect[j].sid, temp1.sid ) ;
+	                temp1.weight = temp->connect[j-1].weight ;
+	                temp->connect[j-1].weight = temp->connect[j].weight ;
+	                temp->connect[j].weight = temp1.weight ;
+	            }
+	        }
+	    	
+		}
+	}
