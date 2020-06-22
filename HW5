@@ -105,13 +105,14 @@ class Start{
 		AnsList.clear() ;		
 	} // init()	
 	
-	void TextInput(string filename,string filenumber,float realnum) { //讀入檔案 
+	bool TextInput(string filename,string filenumber,float realnum) { //讀入檔案 
 		ifstream inFile;
 		filename = "pairs" + filenumber + ".bin";
 		data temp ;
 		inFile.open( filename.c_str(), ios::in | ios::binary ) ;
 		if (!inFile){	
 			cout << filename << " does not exist!!!\n\n";
+			return false ;
 		} //
 		else {
 			head = new NodeLink() ;
@@ -120,6 +121,8 @@ class Start{
 					list.push_back(temp) ;
 			}
 		} // else 
+		
+		return true ;
 		
 	} // Text2Binary	
 
@@ -524,7 +527,7 @@ class Start{
 		if ( check == 1 ){ // 找到相鄰串列 開始計算路徑 
 			 Mission2(filenumber, realnum ) ;
 		} // if 				 
-		else if ( check == -1 ) cout << " 沒找到 \n" ;
+		else if ( check == -1 ) cout << "### the student id does not exist! ###\n" ;
 			check = -1 ;  
 			
 	} // FindM2
@@ -700,3 +703,61 @@ void imformation() {
 	cout <<"**************************************" << endl;
 	cout  << "Input a choice(0, 1, 2) [Any other key: QUIT]:  \n"	;	
 } // imformation()
+void run(){
+	int key ;
+	string filename, filenumber ;	
+	bool find = false ,first = false,second = false  ;	
+	float realnum ;
+	Start start;
+	
+	imformation() ;	
+	cin >> key ; 		
+	while( !find ) { 
+	    if ( key == 0 ) {  	   
+	    	while (true ) {			
+				cout << "Input a real number in (0,1]:  ";
+				cin >> realnum ;	 	
+				if (realnum > 0 && realnum<=1) break ;
+				else cout << "\n### It is NOT in (0,1] ###\n" ;
+			} // while  
+	    	cout << "\nInput a file number :" ;
+			cin >> filenumber;			
+			filename = "input" + filenumber + ".txt" ;	  
+			start.init() ;
+			if(start.TextInput(filename,filenumber,realnum )){
+				start.mission0(  filenumber , realnum ) ;
+				first = true ;
+			}
+			else{
+				run();
+			}
+
+	    } // if 按鈕為1     
+	    else if ( key == 1 ) {  
+	    	if(first) { 
+	    		start.mission1( filenumber, realnum ) ;	    	
+	    		second = true ;
+	    	} 
+	    	else cout << "### There is no graph and choose 0 first. ###\n" ;
+	    } // if 按鈕為2 
+	    else if ( key == 2) {  
+	    	if( first && second ){			
+	    		start.printtitleM2() ;	  
+				start.FindM2( filenumber, realnum ) ;				
+			}
+			else if ( first && !second ) cout << "### Choose 1 to find connected components. ###\n" ;
+	    	else cout << "### There is no graph and choose 0 first. ###\n" ;	    
+	    } // if 按鈕為2        
+		else {
+			break ;
+		} // else 
+		
+  		imformation() ;	
+		cin >> key ;
+		
+	} // while
+}
+			
+int main() {
+	run();	
+}
