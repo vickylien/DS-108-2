@@ -468,3 +468,235 @@ class Start{
 		}		
 		outFile.close() ;
 	}	
+
+	void printtitleM2() { // 印出任務一的開頭 
+		cout << "\n########################################################\n" ;
+		cout << "mission 2: Shortest Distances\n" ;
+		cout << "########################################################\n\n" ;			
+		for ( int i = 0 ; i < match.size() ; i++ ) {
+			cout << "   "<< setw(2)<< match[i].sid1  ;
+			match[i].num = i ;
+			if ( (i+1) % 8 == 0  ){		
+				cout << "\n" ;
+			} // if 			
+		} // for 
+		cout << "\nInput a student ID [0: exit] " ;
+	}	
+	
+	void FindM2( string filenumber, float realnum ) {  // 先找出與指定學號有關串列 
+		char testname[20] ;
+		int check = -1 ;
+		TwoType tempinfo ;
+		nodetype stempinfo ;
+		cin >> testname ;		
+		SecList.clear() ;
+		AnsList.clear() ;
+		strcpy( tempinfo.sid1, testname ) ;												
+		SecList.push_back( tempinfo ) ;	
+		AnsList.push_back( tempinfo ) ;	
+				
+		for ( int runall = ConnectList.size()-1   ; runall >= 0 ; runall -- ) { // 先找出有關串列 跑ConnectList最外層迴圈找一樣的學號
+			for ( int runCon = 0  ; runCon < ConnectList[runall].match.size() ; runCon ++ ) { // 跑ConnectList內層 
+				if ( strcmp ( testname , ConnectList[runall].match[runCon].sid1 ) == 0 ) {
+					
+					for ( int runmatch = 0   ; runmatch < ConnectList[runall].match.size() ; runmatch ++ ) { 
+						if ( strcmp ( ConnectList[runall].match[runmatch].sid1, ConnectList[runall].match[runCon].sid1 ) != 0 ) {
+							strcpy( tempinfo.sid1, ConnectList[runall].match[runmatch].sid1 ) ;																		
+							SecList.push_back( tempinfo ) ;
+							AnsList.push_back( tempinfo ) ;	
+						} // 輸出跟需要找的學號不同的相鄰學號 
+					} // for 輸出相鄰學號 
+					check = 1 ;
+				}
+			} // for
+			if ( check == 1 ) break ;		
+		}  // for  
+		
+	
+		for ( int d = 0 ; d < AnsList.size() ; d++ ){ // 設定原始組別
+			for ( int c =  0 ; c < match.size() ; c++ ) {
+				if ( strcmp (  AnsList[d].sid1 , match[c].sid1) == 0 )
+					AnsList[d].num = c+1 ;
+			} // for 
+		} // for 
+	
+		
+		if ( check == 1 ){ // 找到相鄰串列 開始計算路徑 
+			 Mission2(filenumber, realnum ) ;
+		} // if 				 
+		else if ( check == -1 ) cout << " 沒找到 \n" ;
+			check = -1 ;  
+			
+	} // FindM2
+	
+	void sortWeight(vector<TwoType> &SecList, TwoType stempinfo){
+		for ( int i = 0 ; i < SecList.size() ; i++ ) {  //  將權重排序 
+			for ( int j = i+1 ; j < SecList.size() ; j++ ) {
+				if( SecList[i].weight > SecList[j].weight) {
+					  	stempinfo = SecList[i] ;
+					  	SecList[i] = SecList[j] ;
+					  	SecList[j] = stempinfo ;																						 		
+			 	} // if				 		
+			 } // for 
+		} // for 
+	}
+	void seletNext(vector<TwoType> &SecList, float &tempweight, float &temp2weight, char test[20] ){
+		for ( int i = 0 ; i < SecList.size() ; i++ ) {  //  選擇下一個目標
+			if ( SecList[i].weight != 0 && SecList[i].find != true  ) {
+				SecList[i].find	= true ;
+				strcpy ( test ,  SecList[i].sid1 );
+				temp2weight =  SecList[i].weight ;
+				tempweight =  SecList[i].weight ;
+				break ;
+			 } // if
+		} // for 
+	}
+	
+	void Mission2(string filenumber, float realnum ) {  // 任務2  
+		char test[20] ;
+		nodetype tempinfo ;
+		TwoType stempinfo ;
+		treetype temptree ;
+		TreeList.clear() ;
+		float tempweight ;
+		float temp2weight = 0 ;
+		int check = -1 ;
+		strcpy ( test , SecList[0].sid1 ) ; // 設定第一次需找尋名字 
+		SecList[0].find = true ;
+		for ( int b = 0 ; b < SecList.size() ; b++ )	 { // 暫時設定 需改成< SecList.size	 
+			if ( MemberList2.empty()) { // 如果MemberList2 為空 設定第一筆資料  			
+				strcpy ( temptree.sid1 , SecList[0].sid1 ) ;
+				MemberList2.push_back( temptree ) ;
+				MemberList2.push_back( temptree ) ;
+				int a = 0 ;
+				for ( int run = 0 ; run < match.size() ; run ++) { // 在Thematch 找與M2List 內名單一樣的學號 
+					if ( strcmp ( match[run].sid1 , test )  == 0 ) {  // 找到位置
+						for ( int runmatch = match[run].match.size() -1   ; runmatch >= 0 ; runmatch-- )	{ // 將資料存到  MemberList2 
+					  			strcpy( tempinfo.sid1, match[run].match[runmatch].sid1  ) ;
+					  			tempinfo.weight = match[run].match[runmatch].weight ; // 可能不用存 
+					  			TreeList.push_back( tempinfo) ;	
+					  			MemberList2[0].match.push_back( tempinfo ) ;				  				
+								a++ ;
+						} // for		   
+					} // if
+				} // for 		
+				
+				for ( int runM2 = 0 ; runM2 < SecList.size() ; runM2 ++  ){
+					for ( int runmatch =  0 ; runmatch < MemberList2[0].match.size() ; runmatch++ ) {
+						if ( strcmp ( SecList[runM2].sid1 , MemberList2[0].match[runmatch].sid1) == 0){
+							SecList[runM2].weight = MemberList2[0].match[runmatch].weight ;
+						} // 名字一樣複製權重 						
+						
+					} // for 					
+				} // for 設定第一次權重距離 
+				
+				sortWeight(SecList, stempinfo) ;
+				seletNext(SecList, tempweight, temp2weight, test) ;
+												
+			} // if MemberList2 為空設定一開始值 
+			
+			else {			
+				strcpy ( temptree.sid1 , test ) ;
+				MemberList2[1].match.clear() ;
+				for ( int run = 0 ; run < match.size() ; run ++) { // 在Thematch 找與M2List 內名單一樣的學號 
+					if ( strcmp ( match[run].sid1 , test )  == 0 ) {  // 找到位置
+						for ( int runmatch = match[run].match.size() -1   ; runmatch >= 0 ; runmatch-- )	{ // 將資料存到  MemberList2 
+					  			strcpy( tempinfo.sid1, match[run].match[runmatch].sid1  ) ;
+					  			tempinfo.weight = tempweight + match[run].match[runmatch].weight ; // 可能不用存 
+					  			TreeList.push_back( tempinfo) ;	
+					  			MemberList2[1].match.push_back( tempinfo ) ;				  				
+						} // for		   
+					} // if
+				} // for 			
+				 
+				for ( int runM2 = 0 ; runM2 < SecList.size() ; runM2 ++ ){ // 替換最小路徑 
+					for ( int ML2 = 0 ; ML2 < MemberList2[1].match.size() ; ML2++ ) {
+						if( strcmp ( MemberList2[1].match[ML2].sid1 , SecList[runM2].sid1 )  ==0){ // 名字一樣
+						 	if ( MemberList2[1].match[ML2].weight < SecList[runM2].weight  )
+								SecList[runM2].weight =	MemberList2[1].match[ML2].weight ;
+						}	// if 							
+					} // for 
+									
+				} // for 
+				
+				for ( int runM2 = 0 ; runM2 < SecList.size() ; runM2 ++  ){ // 設定第一次權重距離  
+					for ( int runmatch =  0 ; runmatch < MemberList2[1].match.size() ; runmatch++ ) {
+						if ( strcmp ( SecList[runM2].sid1 , MemberList2[1].match[runmatch].sid1) == 0 ) { 
+							if ( SecList[runM2].weight == 0 ) // 權重是0 直接加 
+								SecList[runM2].weight = MemberList2[1].match[runmatch].weight ;
+							else if ( SecList[runM2].weight > MemberList2[1].match[runmatch].weight && SecList[runM2].weight != 0 ) 
+								SecList[runM2].weight = MemberList2[1].match[runmatch].weight ;
+						} // 名字一樣複製權重 											
+					} // for 					
+				} // for 設定第一次權重距離 			
+				
+				sortWeight(SecList, stempinfo) ;
+				seletNext(SecList, tempweight, temp2weight, test) ;	
+				 	
+			} // else 
+		} // for 最外層 
+				
+		for ( int d = 0 ; d < AnsList.size() ; d++ ){ // 設定答案組別
+			for ( int c =  0 ; c < SecList.size() ; c++ ) {
+				if ( strcmp (  AnsList[d].sid1 , SecList[c].sid1) == 0 )
+					AnsList[d].weight = SecList[c].weight ;
+			} // for
+		} // for 	
+			outputM2( filenumber,  realnum ) ;
+	} // Mission2
+	
+	
+	void Tsortinglist( vector<TwoType> & temp  ){			// 排序 
+		TwoType temp1 ;
+		for( int i = temp.size()-1 ; i >0 ; i-- ){
+	        for(int j = 0 ; j <= i-1; j++) {
+  				if ( temp[j].weight >temp[j+1].weight  ) {				 
+	                strcpy( temp1.sid1, temp[j+1].sid1 ) ;
+	                strcpy( temp[j+1].sid1, temp[j].sid1 ) ;
+	                strcpy( temp[j].sid1, temp1.sid1 ) ;
+	                temp1.weight = temp[j+1].weight ;
+	                temp[j+1].weight = temp[j].weight ;
+	                temp[j].weight = temp1.weight ;
+	            }
+	        }
+	    	
+		}
+	}	
+	void outputM2(string filenumber, float realnum ) { // 輸出任務2 
+	    string rnum ;
+	    stringstream ss;
+	    ss << realnum ;
+	    ss >> rnum ;				
+		string filename = "Pairs" + filenumber + "_"+ rnum+ ".ds" ;				
+		fstream fout ;
+		fout.open( filename.c_str(), ios::app ) ;		
+		fout << "\n\norigin: " << AnsList[0].sid1 << "\n" ;		
+		AnsList.erase(AnsList.begin());
+		Tsortinglist( AnsList) ;
+		for ( int i = 0 ; i < AnsList.size() ; i++ ) {	
+			fout << "(" << setw(2) << i+1 << ")   " ;
+			fout << AnsList[i].sid1 <<", " << AnsList[i].weight << "  " ;
+			if ( (i+1) % 8 == 0 ) fout << "\n" ;			
+		} // 			
+		fout.close() ;
+		cout << "\n[0]Quit or [Any other key]continue?\n" ;
+	    cin >> rnum ;
+	    if ( rnum != "0" ) {
+	    	printtitleM2() ;
+	    	FindM2(filenumber, realnum) ; 
+		}
+	
+	}
+	
+} ;
+
+			
+void imformation() {
+	cout <<"\n******* Graph data applications ******" << endl;
+	cout <<"* [Any other key: QUIT]              *" << endl;
+	cout <<"* 0. Create adjacency lists          *" << endl;
+	cout <<"* 1. Build connected components      *" << endl;
+	cout <<"* 2. Find shortest paths by Dijkstra *" << endl;
+	cout <<"**************************************" << endl;
+	cout  << "Input a choice(0, 1, 2) [Any other key: QUIT]:  \n"	;	
+} // imformation()
