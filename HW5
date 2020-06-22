@@ -274,3 +274,197 @@ class Start{
 	    	
 		}
 	}
+
+	void mission1( string filenumber,float realnum ) {	
+		Data = NULL ;
+		DNode *Data2 = NULL ;
+		DNode *Data3 = NULL ;	
+		for( NodeLink * temp = head ;  temp != NULL ; temp = temp -> next ) {
+			if( !found( temp->sid ,Data ) ) {
+				if ( Data == NULL )			
+					Dfs( temp->sid ,temp->weight, head, temp, Data ) ;
+				else {
+					Dfs( temp->sid,temp->weight, head, temp, Data2 ) ;
+					for( Data3 = Data ; Data3->next != NULL ; Data3 = Data3 -> next ) ;
+					Data3->next = Data2 ;
+					Data2 = NULL ;
+					Data3 = NULL ;
+				}
+			}
+		}	
+		Output_Mission1( Data, filenumber,realnum ) ;
+	}	
+	
+	void Dfs( char sid[10] ,float weight , NodeLink * head, NodeLink * temp, DNode *&Data ){	
+		if ( Data == NULL ) {
+			DNode * temp2 = new DNode ;
+			Node * temp3 = new Node ;
+			strcpy( temp3->sid, sid ) ;
+			temp3 -> weight = weight ;
+			temp3->next = NULL ;
+			temp2->Id = temp3 ; 
+			temp2->next = NULL ;
+			Data = temp2 ;	
+			Data->degree++ ;	
+		}
+		else {
+			DNode * temp2 = Data ;
+			Node * temp3 = temp2->Id ;  
+			Node * temp4 ;
+			for( temp4 = temp3 ; temp4->next != NULL ; temp4 = temp4->next ) ;
+			temp4->next = new Node ;
+			temp4 = temp4->next ;
+			strcpy( temp4->sid, sid ) ;
+			temp4 -> weight = weight ;
+			temp4->next = NULL ;
+			Data->degree++ ;
+		}
+	
+		NodeLink * find = NULL ;
+		for( int i = 0 ; i < temp->connect.size() ; i++ ) {
+			if ( !found2( temp->connect[i].sid, Data) ) {
+				for ( find = head ; find != NULL ; find = find->next ) {
+					if ( strcmp( temp->connect[i].sid, find->sid ) == 0 ) break ;
+				}
+				Dfs( temp->connect[i].sid,temp->connect[i].weight, head, find, Data ) ;
+			}
+		}
+	
+	}
+	
+	bool found( char id[10] , DNode *Data  ) {
+		DNode * temp = Data ;
+		if ( temp == NULL ) 
+			return false ;
+		else {
+			for ( ; temp != NULL ; temp = temp->next ) {
+				for( Node * temp2 = temp->Id ; temp2 != NULL ; temp2 = temp2->next ) {
+					if ( strcmp( id, temp2->sid ) == 0 ) 
+						return true ;
+				} 
+			}	
+		}
+		return false ;
+	}
+	
+	bool found2( char id[10], DNode*Data ) {
+		if ( Data == NULL ) 
+			return false ;	
+		else {
+			Node* temp = Data->Id ;
+			for ( ; temp != NULL ; temp = temp -> next ) {
+				if ( strcmp( id, temp->sid ) == 0 ) return true ;
+			}
+		}	
+	
+		return false ;
+	}	
+		
+	void Ssortinglist( NodeLink *temp ){													// 排序 
+		Link temp1 ;
+		for( int i = temp->connect.size()-1 ; i >0 ; i-- ){
+	        for(int j = 0 ; j <= i-1; j++) {
+ 				string x = temp->connect[j].sid ; 
+ 				string y = temp->connect[j+1].sid ; 
+ 				if ( x > y ) {				 
+	                strcpy( temp1.sid, temp->connect[j+1].sid ) ;
+	                strcpy( temp->connect[j+1].sid, temp->connect[j].sid ) ;
+	                strcpy( temp->connect[j].sid, temp1.sid ) ;
+	            }
+	        }
+	    	
+		}
+	}
+	
+	void Swap( DNode * Data, DNode * Data2 )	{
+		int tempdegree = Data -> degree ; 
+		Node * temp = Data -> Id ;		
+		Data -> Id = Data2 -> Id;
+		Data -> degree = Data2 -> degree ;
+		Data2 -> Id = temp ;			
+		Data2 -> degree = tempdegree ;			
+	} // swap
+		
+	void ListToNode() {  // 將list轉成指標  
+		root = new NodeLink() ;
+		NodeLink * cur = root ;
+		
+		for( DNode *temp = Data ; temp != NULL ; temp = temp -> next ) {
+			cur -> degree = temp -> degree ;
+			for( Node *temp2 = temp->Id ; temp2 != NULL ; temp2 = temp2 -> next ) {
+				Link tempsid ;
+				strcpy ( tempsid.sid, temp2->sid ) ;
+				tempsid.weight = temp2->weight ;
+				cur ->connect.push_back(tempsid) ;
+			} // for 
+			cur->next = new NodeLink() ;
+			cur = cur->next ;
+		} // for 
+	
+			
+	} // ListToNode
+
+	void ListToNode2() { // 將list轉成指標 
+		ConnectList.clear() ;
+		anstype cur ;
+		int i = 0 ; 
+		for( DNode *temp = Data ; temp != NULL ; temp = temp -> next ) {			
+			cur.num  = temp -> degree ;
+			ConnectList.push_back(cur) ;			
+			for( Node *temp2 = temp->Id ; temp2 != NULL ; temp2 = temp2 -> next ) {
+				nodetype tempsid; 
+				strcpy ( tempsid.sid1, temp2->sid ) ;
+				tempsid.weight = temp2->weight ;
+				ConnectList[i].match.push_back(tempsid) ;
+			} // for 
+			i++ ;
+		} // for 
+			
+	} // ListToNode	
+	
+	
+	void Output_Mission1( DNode *Data, string filenumber, float realnum ) {
+		int i = 1;
+	    string rnum ;
+	    stringstream ss;
+	    ss << realnum ;
+	    ss >> rnum ;		
+		
+		string filename = "Pairs" + filenumber + "_"+ rnum+ ".cc" ;
+		ofstream outFile ;
+		outFile.open( filename.c_str(), ios::out ) ;
+
+		int connum = 0 ;
+		for( DNode *d1 = Data ; d1 != NULL ; d1 = d1 -> next ) {
+			connum++ ;
+			for( DNode *d2 = Data ; d2->next != NULL ; d2 = d2 -> next ) {	
+				if ( d1 -> degree > d2 -> degree) 
+					Swap(d1,d2) ;
+			} // for 
+
+		} // for 
+		ListToNode() ;
+		ListToNode2() ;
+		for( NodeLink * temp = root; temp != NULL ; temp = temp -> next ) {	
+			Ssortinglist( temp ) ;																// 鏈結的排序
+		} // for 		
+		
+		cout <<"\n<<< There are "<<connum << " connected components in total. >>>" << endl ; 
+		outFile <<"\n<<< There are "<<connum << " connected components in total. >>>" << endl ; 							
+		for( NodeLink * temp = root ; temp != NULL ; temp = temp -> next  ){
+			if ( temp->connect.size() > 0 ) {
+				cout << "(" << i << ") Connected Component: size = " << temp->degree<< endl ; 
+				outFile << "(" << i << ") Connected Component: size = " << temp->degree ; 		
+				for( int j = 0 ; j < temp->connect.size() ; j++ ){
+					if ( j % 5 == 0 ) {
+						outFile << "\n     " ;
+					}
+
+					outFile << "(" << j+1 << ") " <<  temp->connect[j].sid << "  " ; 
+				}
+				outFile << endl ;
+				i++ ;
+			}	
+		}		
+		outFile.close() ;
+	}	
